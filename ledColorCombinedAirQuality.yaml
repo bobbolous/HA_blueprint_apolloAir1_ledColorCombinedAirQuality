@@ -30,15 +30,33 @@ blueprint:
       selector:
         duration:
 
-    led_brightness:
-      name: LED Brightness
-      description: Brightness from 0 (off) to 255 (max)
-      default: 100
+    day_brightness:
+      name: Day Brightness
+      default: 120
       selector:
         number:
-          min: 0
+          min: 1
           max: 255
-          mode: slider
+
+    night_brightness:
+      name: Night Brightness
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 255
+
+    night_start:
+      name: Night Start Time
+      default: "22:00:00"
+      selector:
+        time:
+
+    night_end:
+      name: Night End Time
+      default: "06:00:00"
+      selector:
+        time:
 
     co_yellow:
       default: 5
@@ -121,7 +139,28 @@ variables:
   voc_yellow: !input voc_yellow
   voc_red: !input voc_red
 
-  brightness: !input led_brightness
+  day_brightness: !input day_brightness
+  night_brightness: !input night_brightness
+  night_start: !input night_start
+  night_end: !input night_end
+
+  is_night: >
+    {% set now = now().time() %}
+    {% set start = strptime(night_start, "%H:%M:%S").time() %}
+    {% set end = strptime(night_end, "%H:%M:%S").time() %}
+
+    {% if start < end %}
+      {{ start <= now < end }}
+    {% else %}
+      {{ now >= start or now < end }}
+    {% endif %}
+
+  brightness: >
+    {% if is_night %}
+      {{ night_brightness }}
+    {% else %}
+      {{ day_brightness }}
+    {% endif %}
 
   state_level: >
     {% set red =
