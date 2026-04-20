@@ -58,52 +58,72 @@ blueprint:
       selector:
         time:
 
-    co_yellow:
+    color_stage_1:
+      name: Stage 1 Color
+      default: [0, 255, 0]
+      selector:
+        color_rgb:
+
+    color_stage_2:
+      name: Stage 2 Color
+      default: [255, 200, 0]
+      selector:
+        color_rgb:
+
+    color_stage_3:
+      name: Stage 3 Color
+      default: [255, 0, 0]
+      selector:
+        color_rgb:
+
+    co_stage_2:
+      name: CO Stage 2 Threshold
       default: 5
       selector:
         number:
           min: 0
           max: 50
-    co_red:
+    co_stage_3:
+      name: CO Stage 3 Threshold
       default: 10
       selector:
         number:
           min: 0
           max: 100
 
-    co2_yellow:
+    co2_stage_2:
       default: 800
       selector:
         number:
           min: 400
           max: 2000
-    co2_red:
+    co2_stage_3:
       default: 1200
       selector:
         number:
           min: 400
           max: 5000
 
-    pm1_yellow:
+    pm1_stage_2:
       default: 10
       selector:
         number:
           min: 0
           max: 100
-    pm1_red:
+    pm1_stage_3:
       default: 25
       selector:
         number:
           min: 0
           max: 200
 
-    voc_yellow:
+    voc_stage_2:
       default: 200
       selector:
         number:
           min: 0
           max: 1000
-    voc_red:
+    voc_stage_3:
       default: 400
       selector:
         number:
@@ -119,6 +139,11 @@ trigger:
       - !input voc_sensor
     for: !input update_delay
 
+  - platform: time
+    at: !input night_start
+  - platform: time
+    at: !input night_end
+
 variables:
   co_entity: !input co_sensor
   co2_entity: !input co2_sensor
@@ -130,14 +155,18 @@ variables:
   pm1: "{{ states(pm1_entity) | float(0) }}"
   voc: "{{ states(voc_entity) | float(0) }}"
 
-  co_yellow: !input co_yellow
-  co_red: !input co_red
-  co2_yellow: !input co2_yellow
-  co2_red: !input co2_red
-  pm1_yellow: !input pm1_yellow
-  pm1_red: !input pm1_red
-  voc_yellow: !input voc_yellow
-  voc_red: !input voc_red
+  co_stage_2: !input co_stage_2
+  co_stage_3: !input co_stage_3
+  co2_stage_2: !input co2_stage_2
+  co2_stage_3: !input co2_stage_3
+  pm1_stage_2: !input pm1_stage_2
+  pm1_stage_3: !input pm1_stage_3
+  voc_stage_2: !input voc_stage_2
+  voc_stage_3: !input voc_stage_3
+
+  color_stage_1: !input color_stage_1
+  color_stage_2: !input color_stage_2
+  color_stage_3: !input color_stage_3
 
   day_brightness: !input day_brightness
   night_brightness: !input night_brightness
@@ -163,52 +192,52 @@ variables:
     {% endif %}
 
   state_level: >
-    {% set red =
-      co > co_red or
-      co2 > co2_red or
-      pm1 > pm1_red or
-      voc > voc_red
+    {% set stage_3 =
+      co > co_stage_3 or
+      co2 > co2_stage_3 or
+      pm1 > pm1_stage_3 or
+      voc > voc_stage_3
     %}
-    {% set yellow =
-      co > co_yellow or
-      co2 > co2_yellow or
-      pm1 > pm1_yellow or
-      voc > voc_yellow
+    {% set stage_2 =
+      co > co_stage_2 or
+      co2 > co2_stage_2 or
+      pm1 > pm1_stage_2 or
+      voc > voc_stage_2
     %}
 
-    {% if red %}
-      red
-    {% elif yellow %}
-      yellow
+    {% if stage_3 %}
+      stage_3
+    {% elif stage_2 %}
+      stage_2
     {% else %}
-      green
+      stage_1
     {% endif %}
 
 action:
   - choose:
-      - conditions: "{{ state_level == 'green' }}"
+      - conditions: "{{ state_level == 'stage_1' }}"
         sequence:
           - service: light.turn_on
             target:
               entity_id: !input led_light
             data:
-              rgb_color: [0, 255, 0]
+              rgb_color: "{{ color_stage_1 }}"
               brightness: "{{ brightness | int }}"
 
-      - conditions: "{{ state_level == 'yellow' }}"
+      - conditions: "{{ state_level == 'stage_2' }}"
         sequence:
           - service: light.turn_on
             target:
               entity_id: !input led_light
             data:
-              rgb_color: [255, 200, 0]
+              rgb_color: "{{ color_stage_2 }}"
               brightness: "{{ brightness | int }}"
 
-      - conditions: "{{ state_level == 'red' }}"
+      - conditions: "{{ state_level == 'stage_3' }}"
         sequence:
           - service: light.turn_on
             target:
               entity_id: !input led_light
             data:
-              rgb_color: [255, 0, 0]
+              rgb_color: "{{ color_stage_3 }}"
               brightness: "{{ brightness | int }}"
