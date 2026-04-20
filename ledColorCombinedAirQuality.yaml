@@ -1,49 +1,36 @@
 blueprint:
   name: Air Quality LED (Apollo Air-1)
-  description: Set LED color based on multiple air quality sensors
   domain: automation
 
   input:
     co_sensor:
-      name: CO Sensor
       selector:
         entity:
           domain: sensor
-
     co2_sensor:
-      name: CO2 Sensor
       selector:
         entity:
           domain: sensor
-
     pm1_sensor:
-      name: PM1 Sensor
       selector:
         entity:
           domain: sensor
-
     voc_sensor:
-      name: VOC Sensor
       selector:
         entity:
           domain: sensor
-
     led_light:
-      name: LED Light
       selector:
         entity:
           domain: light
 
     co_yellow:
-      name: CO Yellow Threshold
       default: 5
       selector:
         number:
           min: 0
           max: 50
-
     co_red:
-      name: CO Red Threshold
       default: 10
       selector:
         number:
@@ -56,7 +43,6 @@ blueprint:
         number:
           min: 400
           max: 2000
-
     co2_red:
       default: 1200
       selector:
@@ -70,7 +56,6 @@ blueprint:
         number:
           min: 0
           max: 100
-
     pm1_red:
       default: 25
       selector:
@@ -84,7 +69,6 @@ blueprint:
         number:
           min: 0
           max: 1000
-
     voc_red:
       default: 400
       selector:
@@ -94,32 +78,44 @@ blueprint:
 
 trigger:
   - platform: state
-    entity_id: !input co_sensor
-  - platform: state
-    entity_id: !input co2_sensor
-  - platform: state
-    entity_id: !input pm1_sensor
-  - platform: state
-    entity_id: !input voc_sensor
+    entity_id:
+      - !input co_sensor
+      - !input co2_sensor
+      - !input pm1_sensor
+      - !input voc_sensor
 
 variables:
-  co: "{{ states(!input co_sensor) | float(0) }}"
-  co2: "{{ states(!input co2_sensor) | float(0) }}"
-  pm1: "{{ states(!input pm1_sensor) | float(0) }}"
-  voc: "{{ states(!input voc_sensor) | float(0) }}"
+  co_entity: !input co_sensor
+  co2_entity: !input co2_sensor
+  pm1_entity: !input pm1_sensor
+  voc_entity: !input voc_sensor
+
+  co: "{{ states(co_entity) | float(0) }}"
+  co2: "{{ states(co2_entity) | float(0) }}"
+  pm1: "{{ states(pm1_entity) | float(0) }}"
+  voc: "{{ states(voc_entity) | float(0) }}"
+
+  co_yellow: !input co_yellow
+  co_red: !input co_red
+  co2_yellow: !input co2_yellow
+  co2_red: !input co2_red
+  pm1_yellow: !input pm1_yellow
+  pm1_red: !input pm1_red
+  voc_yellow: !input voc_yellow
+  voc_red: !input voc_red
 
   state_level: >
     {% set red =
-      co > !input co_red or
-      co2 > !input co2_red or
-      pm1 > !input pm1_red or
-      voc > !input voc_red
+      co > co_red or
+      co2 > co2_red or
+      pm1 > pm1_red or
+      voc > voc_red
     %}
     {% set yellow =
-      co > !input co_yellow or
-      co2 > !input co2_yellow or
-      pm1 > !input pm1_yellow or
-      voc > !input voc_yellow
+      co > co_yellow or
+      co2 > co2_yellow or
+      pm1 > pm1_yellow or
+      voc > voc_yellow
     %}
 
     {% if red %}
