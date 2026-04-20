@@ -4,74 +4,92 @@ blueprint:
 
   input:
     co_sensor:
+      name: CO Sensor
+      description: Select the respective carbon monoxide sensor
       selector:
         entity:
           domain: sensor
     co2_sensor:
+      name: CO2 Sensor
+      description: Select the respective carbon dioxide sensor
       selector:
         entity:
           domain: sensor
-    pm1_sensor:
+    pm_sensor:
+      name: PM Sensor
+      description: Select the respective particulate matter sensor (suggest to use PM <10µm)
       selector:
         entity:
           domain: sensor
     voc_sensor:
+      name: VOC Sensor
+      description: Select the respective numeric volatile organic compound sensor.
       selector:
         entity:
           domain: sensor
     led_light:
+      name: LED Light
+      description: Select the LED that shall be used as indicator.
       selector:
         entity:
           domain: light
 
     update_delay:
       name: Update delay (anti-flicker)
-      default: "00:00:10"
+      description: Choose a delay to avoid flickering of the LED. All changes will be delayed for that time.
+      default: "00:01:00"
       selector:
         duration:
 
     day_brightness:
       name: Day Brightness
-      default: 120
+      description: Choose the brightness of the LED during the defined day time. CAUTION: values below 35 seem to affect the actual light color.
+      default: 128
       selector:
         number:
-          min: 1
+          min: 0
           max: 255
 
     night_brightness:
       name: Night Brightness
-      default: 30
+      description: Choose the brightness of the LED during the defined night time. CAUTION: values below 35 seem to affect the actual light color. With 0 the LED will be Off.
+      default: 35
       selector:
         number:
-          min: 1
+          min: 0
           max: 255
 
     night_start:
       name: Night Start Time
+      description: After this time the value of the Night Brightness will be applied.
       default: "22:00:00"
       selector:
         time:
 
     night_end:
       name: Night End Time
+      description: After this time the value of the Day Brightness will be applied.
       default: "06:00:00"
       selector:
         time:
 
     color_stage_1:
       name: Stage 1 Color
+      description: Use e.g. green or blue.
       default: [0, 255, 0]
       selector:
         color_rgb:
 
     color_stage_2:
       name: Stage 2 Color
+      description: Use e.g. yellow.
       default: [255, 200, 0]
       selector:
         color_rgb:
 
     color_stage_3:
       name: Stage 3 Color
+      description: Use e.g. red.
       default: [255, 0, 0]
       selector:
         color_rgb:
@@ -92,50 +110,56 @@ blueprint:
           max: 100
 
     co2_stage_2:
-      default: 800
+      name: CO2 Stage 2 Threshold
+      default: 1000
       selector:
         number:
-          min: 400
+          min: 0
           max: 2000
     co2_stage_3:
-      default: 1200
+      name: CO2 Stage 3 Threshold
+      default: 2000
       selector:
         number:
-          min: 400
-          max: 5000
+          min: 0
+          max: 4000
 
-    pm1_stage_2:
-      default: 10
+    pm_stage_2:
+      name: PM Stage 2 Threshold
+      default: 100
       selector:
         number:
           min: 0
-          max: 100
-    pm1_stage_3:
-      default: 25
-      selector:
-        number:
-          min: 0
-          max: 200
-
-    voc_stage_2:
-      default: 200
-      selector:
-        number:
-          min: 0
-          max: 1000
-    voc_stage_3:
-      default: 400
+          max: 400
+    pm_stage_3:
+      name: PM Stage 3 Threshold
+      default: 1000
       selector:
         number:
           min: 0
           max: 2000
+
+    voc_stage_2:
+      name: VOC Stage 2 Threshold
+      default: 120
+      selector:
+        number:
+          min: 0
+          max: 400
+    voc_stage_3:
+      name: VOC Stage 3 Threshold
+      default: 250
+      selector:
+        number:
+          min: 0
+          max: 400
 
 trigger:
   - platform: state
     entity_id:
       - !input co_sensor
       - !input co2_sensor
-      - !input pm1_sensor
+      - !input pm_sensor
       - !input voc_sensor
     for: !input update_delay
 
@@ -147,20 +171,20 @@ trigger:
 variables:
   co_entity: !input co_sensor
   co2_entity: !input co2_sensor
-  pm1_entity: !input pm1_sensor
+  pm_entity: !input pm_sensor
   voc_entity: !input voc_sensor
 
   co: "{{ states(co_entity) | float(0) }}"
   co2: "{{ states(co2_entity) | float(0) }}"
-  pm1: "{{ states(pm1_entity) | float(0) }}"
+  pm: "{{ states(pm_entity) | float(0) }}"
   voc: "{{ states(voc_entity) | float(0) }}"
 
   co_stage_2: !input co_stage_2
   co_stage_3: !input co_stage_3
   co2_stage_2: !input co2_stage_2
   co2_stage_3: !input co2_stage_3
-  pm1_stage_2: !input pm1_stage_2
-  pm1_stage_3: !input pm1_stage_3
+  pm_stage_2: !input pm_stage_2
+  pm_stage_3: !input pm_stage_3
   voc_stage_2: !input voc_stage_2
   voc_stage_3: !input voc_stage_3
 
@@ -195,13 +219,13 @@ variables:
     {% set stage_3 =
       co > co_stage_3 or
       co2 > co2_stage_3 or
-      pm1 > pm1_stage_3 or
+      pm > pm_stage_3 or
       voc > voc_stage_3
     %}
     {% set stage_2 =
       co > co_stage_2 or
       co2 > co2_stage_2 or
-      pm1 > pm1_stage_2 or
+      pm > pm_stage_2 or
       voc > voc_stage_2
     %}
 
