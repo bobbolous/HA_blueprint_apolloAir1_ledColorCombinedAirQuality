@@ -24,6 +24,13 @@ blueprint:
         entity:
           domain: light
 
+    update_delay:
+      name: Update delay (anti-flicker)
+      description: Time the value must stay changed before updating LED
+      default: "00:00:10"
+      selector:
+        duration:
+
     co_yellow:
       default: 5
       selector:
@@ -83,6 +90,7 @@ trigger:
       - !input co2_sensor
       - !input pm1_sensor
       - !input voc_sensor
+    for: !input update_delay
 
 variables:
   co_entity: !input co_sensor
