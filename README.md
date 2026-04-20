@@ -1,4 +1,5 @@
-# Apollo Air Quality Merged LED Color Blueprint 
+# Apollo Air1 LEd Color from Combined Air Quality
+
 
 This blueprint changes the color of your Apollo Air-1 LED to indicate the overall air quality.
 Choose your CO, CO2, PM and VOC Sensors to change the color in 3 stages based on configurable threshold values. If one value exceeds the threshold, the LED changes in that stage.
