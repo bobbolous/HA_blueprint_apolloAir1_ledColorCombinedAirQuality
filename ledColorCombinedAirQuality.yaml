@@ -1,0 +1,157 @@
+blueprint:
+  name: Air Quality LED (Apollo Air-1)
+  description: Set LED color based on multiple air quality sensors
+  domain: automation
+
+  input:
+    co_sensor:
+      name: CO Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    co2_sensor:
+      name: CO2 Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    pm1_sensor:
+      name: PM1 Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    voc_sensor:
+      name: VOC Sensor
+      selector:
+        entity:
+          domain: sensor
+
+    led_light:
+      name: LED Light
+      selector:
+        entity:
+          domain: light
+
+    co_yellow:
+      name: CO Yellow Threshold
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 50
+
+    co_red:
+      name: CO Red Threshold
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 100
+
+    co2_yellow:
+      default: 800
+      selector:
+        number:
+          min: 400
+          max: 2000
+
+    co2_red:
+      default: 1200
+      selector:
+        number:
+          min: 400
+          max: 5000
+
+    pm1_yellow:
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 100
+
+    pm1_red:
+      default: 25
+      selector:
+        number:
+          min: 0
+          max: 200
+
+    voc_yellow:
+      default: 200
+      selector:
+        number:
+          min: 0
+          max: 1000
+
+    voc_red:
+      default: 400
+      selector:
+        number:
+          min: 0
+          max: 2000
+
+trigger:
+  - platform: state
+    entity_id: !input co_sensor
+  - platform: state
+    entity_id: !input co2_sensor
+  - platform: state
+    entity_id: !input pm1_sensor
+  - platform: state
+    entity_id: !input voc_sensor
+
+variables:
+  co: "{{ states(!input co_sensor) | float(0) }}"
+  co2: "{{ states(!input co2_sensor) | float(0) }}"
+  pm1: "{{ states(!input pm1_sensor) | float(0) }}"
+  voc: "{{ states(!input voc_sensor) | float(0) }}"
+
+  state_level: >
+    {% set red =
+      co > !input co_red or
+      co2 > !input co2_red or
+      pm1 > !input pm1_red or
+      voc > !input voc_red
+    %}
+    {% set yellow =
+      co > !input co_yellow or
+      co2 > !input co2_yellow or
+      pm1 > !input pm1_yellow or
+      voc > !input voc_yellow
+    %}
+
+    {% if red %}
+      red
+    {% elif yellow %}
+      yellow
+    {% else %}
+      green
+    {% endif %}
+
+action:
+  - choose:
+      - conditions: "{{ state_level == 'green' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input led_light
+            data:
+              rgb_color: [0, 255, 0]
+
+      - conditions: "{{ state_level == 'yellow' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input led_light
+            data:
+              rgb_color: [255, 200, 0]
+
+      - conditions: "{{ state_level == 'red' }}"
+        sequence:
+          - service: light.turn_on
+            target:
+              entity_id: !input led_light
+            data:
+              rgb_color: [255, 0, 0]
