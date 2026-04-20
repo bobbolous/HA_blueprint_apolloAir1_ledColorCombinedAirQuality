@@ -17,33 +17,33 @@ blueprint:
           domain: sensor
     pm_sensor:
       name: PM Sensor
-      description: Select the respective particulate matter sensor (suggest to use PM <10µm)
+      description: Select the respective particulate matter sensor (recommended PM <10µm)
       selector:
         entity:
           domain: sensor
     voc_sensor:
       name: VOC Sensor
-      description: Select the respective numeric volatile organic compound sensor.
+      description: Select the respective numeric volatile organic compound sensor
       selector:
         entity:
           domain: sensor
     led_light:
       name: LED Light
-      description: Select the LED that shall be used as indicator.
+      description: Select the LED that shall be used as indicator
       selector:
         entity:
           domain: light
 
     update_delay:
       name: Update delay (anti-flicker)
-      description: Choose a delay to avoid flickering of the LED. All changes will be delayed for that time.
+      description: Time a value must remain stable before updating the LED
       default: "00:01:00"
       selector:
         duration:
 
     day_brightness:
       name: Day Brightness
-      description: Choose the brightness of the LED during the defined day time. CAUTION: values below 35 seem to affect the actual light color.
+      description: LED brightness during daytime (1–255). Values below ~35 may affect perceived color
       default: 128
       selector:
         number:
@@ -52,7 +52,7 @@ blueprint:
 
     night_brightness:
       name: Night Brightness
-      description: Choose the brightness of the LED during the defined night time. CAUTION: values below 35 seem to affect the actual light color. With 0 the LED will be Off.
+      description: LED brightness during night time (1–255). Set to 0 to turn LED off at night
       default: 35
       selector:
         number:
@@ -61,41 +61,42 @@ blueprint:
 
     night_start:
       name: Night Start Time
-      description: After this time the value of the Night Brightness will be applied.
+      description: Time when night brightness becomes active
       default: "22:00:00"
       selector:
         time:
 
     night_end:
       name: Night End Time
-      description: After this time the value of the Day Brightness will be applied.
+      description: Time when day brightness becomes active
       default: "06:00:00"
       selector:
         time:
 
     color_stage_1:
       name: Stage 1 Color
-      description: Use e.g. green or blue.
+      description: Color when all values are below stage 2 thresholds
       default: [0, 255, 0]
       selector:
         color_rgb:
 
     color_stage_2:
       name: Stage 2 Color
-      description: Use e.g. yellow.
+      description: Color when any value exceeds stage 2 thresholds
       default: [255, 200, 0]
       selector:
         color_rgb:
 
     color_stage_3:
       name: Stage 3 Color
-      description: Use e.g. red.
+      description: Color when any value exceeds stage 3 thresholds
       default: [255, 0, 0]
       selector:
         color_rgb:
 
     co_stage_2:
       name: CO Stage 2 Threshold
+      description: CO level where stage 2 is triggered
       default: 5
       selector:
         number:
@@ -103,6 +104,7 @@ blueprint:
           max: 50
     co_stage_3:
       name: CO Stage 3 Threshold
+      description: CO level where stage 3 is triggered
       default: 10
       selector:
         number:
@@ -111,6 +113,7 @@ blueprint:
 
     co2_stage_2:
       name: CO2 Stage 2 Threshold
+      description: CO2 level where stage 2 is triggered
       default: 1000
       selector:
         number:
@@ -118,6 +121,7 @@ blueprint:
           max: 2000
     co2_stage_3:
       name: CO2 Stage 3 Threshold
+      description: CO2 level where stage 3 is triggered
       default: 2000
       selector:
         number:
@@ -126,6 +130,7 @@ blueprint:
 
     pm_stage_2:
       name: PM Stage 2 Threshold
+      description: Particulate level where stage 2 is triggered
       default: 100
       selector:
         number:
@@ -133,7 +138,8 @@ blueprint:
           max: 400
     pm_stage_3:
       name: PM Stage 3 Threshold
-      default: 1000
+      description: Particulate level where stage 3 is triggered
+      default: 400
       selector:
         number:
           min: 0
@@ -141,18 +147,22 @@ blueprint:
 
     voc_stage_2:
       name: VOC Stage 2 Threshold
+      description: VOC level where stage 2 is triggered
       default: 120
       selector:
         number:
           min: 0
-          max: 400
+          max: 500
     voc_stage_3:
       name: VOC Stage 3 Threshold
+      description: VOC level where stage 3 is triggered
       default: 250
       selector:
         number:
           min: 0
-          max: 400
+          max: 500
+
+mode: restart
 
 trigger:
   - platform: state
@@ -239,6 +249,14 @@ variables:
 
 action:
   - choose:
+      #Turn off LED if brightness is 0
+      - conditions: "{{ brightness | int == 0 }}"
+        sequence:
+          - service: light.turn_off
+            target:
+              entity_id: !input led_light
+
+      #Stage 1
       - conditions: "{{ state_level == 'stage_1' }}"
         sequence:
           - service: light.turn_on
@@ -248,6 +266,7 @@ action:
               rgb_color: "{{ color_stage_1 }}"
               brightness: "{{ brightness | int }}"
 
+      #Stage 2
       - conditions: "{{ state_level == 'stage_2' }}"
         sequence:
           - service: light.turn_on
@@ -257,6 +276,7 @@ action:
               rgb_color: "{{ color_stage_2 }}"
               brightness: "{{ brightness | int }}"
 
+      #Stage 3
       - conditions: "{{ state_level == 'stage_3' }}"
         sequence:
           - service: light.turn_on
