@@ -26,10 +26,19 @@ blueprint:
 
     update_delay:
       name: Update delay (anti-flicker)
-      description: Time the value must stay changed before updating LED
       default: "00:00:10"
       selector:
         duration:
+
+    led_brightness:
+      name: LED Brightness
+      description: Brightness from 0 (off) to 255 (max)
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 255
+          mode: slider
 
     co_yellow:
       default: 5
@@ -112,6 +121,8 @@ variables:
   voc_yellow: !input voc_yellow
   voc_red: !input voc_red
 
+  brightness: !input led_brightness
+
   state_level: >
     {% set red =
       co > co_red or
@@ -143,6 +154,7 @@ action:
               entity_id: !input led_light
             data:
               rgb_color: [0, 255, 0]
+              brightness: "{{ brightness | int }}"
 
       - conditions: "{{ state_level == 'yellow' }}"
         sequence:
@@ -151,6 +163,7 @@ action:
               entity_id: !input led_light
             data:
               rgb_color: [255, 200, 0]
+              brightness: "{{ brightness | int }}"
 
       - conditions: "{{ state_level == 'red' }}"
         sequence:
@@ -159,3 +172,4 @@ action:
               entity_id: !input led_light
             data:
               rgb_color: [255, 0, 0]
+              brightness: "{{ brightness | int }}"
