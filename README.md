@@ -1,4 +1,4 @@
-# Apollo Air1 LEd Color from Combined Air Quality
+# Apollo Air1 LED Color from Combined Air Quality
 
 
 This blueprint changes the color of your Apollo Air-1 LED to indicate the overall air quality.
