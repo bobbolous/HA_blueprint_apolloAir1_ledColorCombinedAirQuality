@@ -1,5 +1,5 @@
 blueprint:
-  name: Air Quality LED (Apollo Air-1)
+  name: Combined Air Quality Status LED (Apollo Air-1)
   domain: automation
 
   input:
