@@ -22,7 +22,7 @@ blueprint:
         entity:
           domain: sensor
     voc_sensor:
-      name: VOC Sensor
+      name: VOC Index Sensor
       description: Select the respective numeric volatile organic compound sensor
       selector:
         entity:
@@ -146,15 +146,15 @@ blueprint:
           max: 2000
 
     voc_stage_2:
-      name: VOC Stage 2 Threshold
-      description: VOC level where stage 2 is triggered
+      name: VOC Index Stage 2 Threshold
+      description: VOC Index level where stage 2 is triggered
       default: 120
       selector:
         number:
           min: 0
           max: 500
     voc_stage_3:
-      name: VOC Stage 3 Threshold
+      name: VOC Index Stage 3 Threshold
       description: VOC level where stage 3 is triggered
       default: 250
       selector:
