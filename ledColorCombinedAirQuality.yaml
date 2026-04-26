@@ -23,7 +23,13 @@ blueprint:
           domain: sensor
     voc_sensor:
       name: VOC Index Sensor
-      description: Select the respective numeric volatile organic compound sensor
+      description: Select the respective numeric volatile organic compound index sensor.
+      selector:
+        entity:
+          domain: sensor
+    aqi_sensor:
+      name: AQI Index Sensor
+      description: Select the respective air quality index sensor (e.g. NowCast AQI).
       selector:
         entity:
           domain: sensor
@@ -161,6 +167,22 @@ blueprint:
         number:
           min: 0
           max: 500
+    aqi_stage_2:
+      name: AQI Stage 2 Threshold
+      description: AQI level where stage 2 is triggered
+      default: 100
+      selector:
+        number:
+          min: 0
+          max: 300
+    aqi_stage_3:
+      name: AQI Stage 3 Threshold
+      description: AQI level where stage 3 is triggered
+      default: 200
+      selector:
+        number:
+          min: 0
+          max: 300
 
 mode: restart
 
@@ -171,6 +193,7 @@ trigger:
       - !input co2_sensor
       - !input pm_sensor
       - !input voc_sensor
+      - !input aqi_sensor
     for: !input update_delay
 
   - platform: time
@@ -183,11 +206,13 @@ variables:
   co2_entity: !input co2_sensor
   pm_entity: !input pm_sensor
   voc_entity: !input voc_sensor
+  aqi_entity: !input aqi_sensor
 
   co: "{{ states(co_entity) | float(0) }}"
   co2: "{{ states(co2_entity) | float(0) }}"
   pm: "{{ states(pm_entity) | float(0) }}"
   voc: "{{ states(voc_entity) | float(0) }}"
+  aqi: "{{ states(aqi_entity) | float(0) }}"
 
   co_stage_2: !input co_stage_2
   co_stage_3: !input co_stage_3
@@ -197,6 +222,8 @@ variables:
   pm_stage_3: !input pm_stage_3
   voc_stage_2: !input voc_stage_2
   voc_stage_3: !input voc_stage_3
+  aqi_stage_2: !input aqi_stage_2
+  aqi_stage_3: !input aqi_stage_3
 
   color_stage_1: !input color_stage_1
   color_stage_2: !input color_stage_2
@@ -230,13 +257,15 @@ variables:
       co > co_stage_3 or
       co2 > co2_stage_3 or
       pm > pm_stage_3 or
-      voc > voc_stage_3
+      voc > voc_stage_3 or
+      aqi > aqi_stage_3
     %}
     {% set stage_2 =
       co > co_stage_2 or
       co2 > co2_stage_2 or
       pm > pm_stage_2 or
-      voc > voc_stage_2
+      voc > voc_stage_2 or
+      aqi > aqi_stage_2
     %}
 
     {% if stage_3 %}
