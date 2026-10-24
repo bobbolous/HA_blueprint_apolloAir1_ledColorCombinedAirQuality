@@ -6,42 +6,36 @@ blueprint:
     co_sensor:
       name: CO Sensor
       description: Select the respective carbon monoxide sensor
-      default: ""
       selector:
         entity:
           domain: sensor
     co2_sensor:
       name: CO2 Sensor
       description: Select the respective carbon dioxide sensor
-      default: ""
       selector:
         entity:
           domain: sensor
     pm_sensor:
       name: PM Sensor
       description: Select the respective particulate matter sensor (recommended PM <10µm)
-      default: ""
       selector:
         entity:
           domain: sensor
     voc_sensor:
       name: VOC Index Sensor
       description: Select the respective numeric volatile organic compound index sensor.
-      default: ""
       selector:
         entity:
           domain: sensor
     aqi_sensor:
       name: AQI Index Sensor
       description: Select the respective air quality index sensor (e.g. NowCast AQI).
-      default: ""
       selector:
         entity:
           domain: sensor
     auxiliary_sensor:
       name: Auxiliary Sensor
       description: Optional additional sensor for a custom air-quality signal.
-      default: ""
       selector:
         entity:
           domain: sensor
@@ -216,20 +210,17 @@ blueprint:
 mode: restart
 
 trigger:
-  - platform: state
-    entity_id: >
-      {{
-        [
-          co_sensor,
-          co2_sensor,
-          pm_sensor,
-          voc_sensor,
-          aqi_sensor,
-          auxiliary_sensor
-        ]
-        | reject('equalto', '')
-        | list
-      }}
+  - platform: template
+    value_template: >
+      {% set sensors = [
+        co_sensor,
+        co2_sensor,
+        pm_sensor,
+        voc_sensor,
+        aqi_sensor,
+        auxiliary_sensor
+      ] | reject('equalto', '') | list %}
+      {{ sensors | map('states') | list | count > 0 }}
     for: !input update_delay
 
   - platform: time
