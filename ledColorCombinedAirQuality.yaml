@@ -6,36 +6,42 @@ blueprint:
     co_sensor:
       name: CO Sensor
       description: Select the respective carbon monoxide sensor
+      default: null
       selector:
         entity:
           domain: sensor
     co2_sensor:
       name: CO2 Sensor
       description: Select the respective carbon dioxide sensor
+      default: null
       selector:
         entity:
           domain: sensor
     pm_sensor:
       name: PM Sensor
       description: Select the respective particulate matter sensor (recommended PM <10µm)
+      default: null
       selector:
         entity:
           domain: sensor
     voc_sensor:
       name: VOC Index Sensor
       description: Select the respective numeric volatile organic compound index sensor.
+      default: null
       selector:
         entity:
           domain: sensor
     aqi_sensor:
       name: AQI Index Sensor
       description: Select the respective air quality index sensor (e.g. NowCast AQI).
+      default: null
       selector:
         entity:
           domain: sensor
     auxiliary_sensor:
       name: Auxiliary Sensor
       description: Optional additional sensor for a custom air-quality signal.
+      default: null
       selector:
         entity:
           domain: sensor
@@ -213,13 +219,13 @@ trigger:
   - platform: template
     value_template: >
       {% set sensors = [
-        co_sensor,
-        co2_sensor,
-        pm_sensor,
-        voc_sensor,
-        aqi_sensor,
-        auxiliary_sensor
-      ] | reject('equalto', '') | list %}
+        co_sensor_value,
+        co2_sensor_value,
+        pm_sensor_value,
+        voc_sensor_value,
+        aqi_sensor_value,
+        auxiliary_sensor_value
+      ] | reject('equalto', none) | reject('equalto', '') | list %}
       {{ sensors | map('states') | list | count > 0 }}
     for: !input update_delay
 
@@ -229,6 +235,13 @@ trigger:
     at: !input night_end
 
 variables:
+  co_sensor_value: !input co_sensor
+  co2_sensor_value: !input co2_sensor
+  pm_sensor_value: !input pm_sensor
+  voc_sensor_value: !input voc_sensor
+  aqi_sensor_value: !input aqi_sensor
+  auxiliary_sensor_value: !input auxiliary_sensor
+
   co_entity: !input co_sensor
   co2_entity: !input co2_sensor
   pm_entity: !input pm_sensor
