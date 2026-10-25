@@ -216,25 +216,29 @@ blueprint:
 mode: restart
 
 trigger:
-  - platform: state
-    entity_id: >
-      {% set sensors = [
-        co_sensor,
-        co2_sensor,
-        pm_sensor,
-        voc_sensor,
-        aqi_sensor,
-        auxiliary_sensor
-      ] | reject('equalto', none) | reject('equalto', '') | list %}
-      {{ sensors | join(', ') }}
-    for: !input update_delay
-    initial: true
+  - platform: event
+    event_type: state_changed
 
   - platform: time
     at: !input night_start
 
   - platform: time
     at: !input night_end
+
+  - platform: homeassistant
+    event: start
+
+condition:
+  - condition: template
+    value_template: >
+      {{ trigger.platform != 'event' or trigger.event.data.entity_id in [
+        co_sensor_value,
+        co2_sensor_value,
+        pm_sensor_value,
+        voc_sensor_value,
+        aqi_sensor_value,
+        auxiliary_sensor_value
+      ] }}
 
 variables:
   co_sensor_value: !input co_sensor
@@ -428,6 +432,12 @@ variables:
     {% endif %}
 
 action:
+  - if:
+      - condition: template
+        value_template: "{{ trigger.platform == 'event' }}"
+    then:
+      - delay: !input update_delay
+
   - choose:
       #Turn off LED if brightness is 0
       - conditions: "{{ brightness | int == 0 }}"
