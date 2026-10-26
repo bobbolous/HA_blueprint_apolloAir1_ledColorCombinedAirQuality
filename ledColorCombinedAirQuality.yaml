@@ -218,6 +218,33 @@ mode: restart
 trigger:
   - platform: event
     event_type: state_changed
+    event_data:
+      entity_id: !input co_sensor
+
+  - platform: event
+    event_type: state_changed
+    event_data:
+      entity_id: !input co2_sensor
+
+  - platform: event
+    event_type: state_changed
+    event_data:
+      entity_id: !input pm_sensor
+
+  - platform: event
+    event_type: state_changed
+    event_data:
+      entity_id: !input voc_sensor
+
+  - platform: event
+    event_type: state_changed
+    event_data:
+      entity_id: !input aqi_sensor
+
+  - platform: event
+    event_type: state_changed
+    event_data:
+      entity_id: !input auxiliary_sensor
 
   - platform: time
     at: !input night_start
@@ -228,26 +255,7 @@ trigger:
   - platform: homeassistant
     event: start
 
-condition:
-  - condition: template
-    value_template: >
-      {{ trigger.platform != 'event' or trigger.event.data.entity_id in [
-        co_sensor_value,
-        co2_sensor_value,
-        pm_sensor_value,
-        voc_sensor_value,
-        aqi_sensor_value,
-        auxiliary_sensor_value
-      ] }}
-
 variables:
-  co_sensor_value: !input co_sensor
-  co2_sensor_value: !input co2_sensor
-  pm_sensor_value: !input pm_sensor
-  voc_sensor_value: !input voc_sensor
-  aqi_sensor_value: !input aqi_sensor
-  auxiliary_sensor_value: !input auxiliary_sensor
-
   co_entity: !input co_sensor
   co2_entity: !input co2_sensor
   pm_entity: !input pm_sensor
