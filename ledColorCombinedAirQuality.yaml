@@ -216,35 +216,23 @@ blueprint:
 mode: single
 
 trigger:
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input co_sensor
+  - platform: state
+    entity_id: !input co_sensor
 
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input co2_sensor
+  - platform: state
+    entity_id: !input co2_sensor
 
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input pm_sensor
+  - platform: state
+    entity_id: !input pm_sensor
 
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input voc_sensor
+  - platform: state
+    entity_id: !input voc_sensor
 
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input aqi_sensor
+  - platform: state
+    entity_id: !input aqi_sensor
 
-  - platform: event
-    event_type: state_changed
-    event_data:
-      entity_id: !input auxiliary_sensor
+  - platform: state
+    entity_id: !input auxiliary_sensor
 
   - platform: time
     at: !input night_start
@@ -361,7 +349,7 @@ variables:
 action:
   - if:
       - condition: template
-        value_template: "{{ trigger.platform == 'event' }}"
+        value_template: "{{ trigger.platform == 'state' }}"
     then:
       - delay: !input update_delay
 
